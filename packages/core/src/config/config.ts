@@ -2585,6 +2585,10 @@ export class Config implements McpContext, AgentLoopContext {
     return this.experimentalContextManagementConfig;
   }
 
+  isAgentSessionEnabled(): boolean {
+    return this.agentSessionSubagentEnabled;
+  }
+
   getContextManagementConfig(): ContextManagementConfig {
     return this.contextManagement;
   }
@@ -3778,6 +3782,10 @@ export class Config implements McpContext, AgentLoopContext {
       process.env['GEMINI_CLI_EXP_AGENT'] === 'true' ||
       this.agentSessionInteractiveEnabled
     );
+  }
+
+  getAgentSessionSubagentEnabled(): boolean {
+    return this.agentSessionSubagentEnabled;
   }
 
   /**
