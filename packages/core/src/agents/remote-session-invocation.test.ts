@@ -211,7 +211,7 @@ describe('RemoteSessionInvocation', () => {
     it('should pass initial state from static map to session', async () => {
       const priorState = { contextId: 'ctx-42', taskId: 'task-42' };
 
-      // Seed the static map before constructing the invocation
+      // Seed the static map before constructing the invocation (composite key)
       (
         RemoteSessionInvocation as unknown as {
           sessionState: Map<string, unknown>;
@@ -253,7 +253,7 @@ describe('RemoteSessionInvocation', () => {
         abortSignal: new AbortController().signal,
       });
 
-      // Verify the state was persisted in the static map
+      // Verify the state was persisted in the static map (composite key)
       const storedState = (
         RemoteSessionInvocation as unknown as {
           sessionState: Map<string, { contextId?: string; taskId?: string }>;
