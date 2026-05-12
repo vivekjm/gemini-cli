@@ -337,19 +337,6 @@ export class AgentRegistry {
     definition: AgentDefinition<TOutput>,
     errors?: string[],
   ): Promise<void> {
-    const existing = this.agents.get(definition.name);
-    if (existing && existing !== definition) {
-      coreEvents.emitFeedback(
-        'warning',
-        `Duplicate agent name '${definition.name}' detected. ` +
-          `The later definition will override the earlier one. ` +
-          `Rename one of the agents to avoid this conflict.`,
-      );
-      debugLogger.warn(
-        `[AgentRegistry] Overriding agent '${definition.name}' — duplicate name from a different definition.`,
-      );
-    }
-
     if (definition.kind === 'local') {
       this.registerLocalAgent(definition);
     } else if (definition.kind === 'remote') {
