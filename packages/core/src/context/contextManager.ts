@@ -16,6 +16,8 @@ import { HistoryObserver } from './historyObserver.js';
 import { render } from './graph/render.js';
 import { ContextWorkingBufferImpl } from './pipeline/contextWorkingBuffer.js';
 import { debugLogger } from '../utils/debugLogger.js';
+import { SnapshotStateHelper } from './utils/snapshotGenerator.js';
+import type { ContextEngineState } from '../services/chatRecordingTypes.js';
 import { hardenHistory } from '../utils/historyHardening.js';
 import { checkContextInvariants } from './utils/invariantChecker.js';
 import type { AdvancedTokenCalculator } from './utils/contextTokenCalculator.js';
@@ -428,5 +430,30 @@ export class ContextManager {
         { error },
       );
     }
+  }
+
+  exportState(): ContextEngineState {
+    return SnapshotStateHelper.exportState(this.buffer.nodes);
+  }
+
+  async restoreState(state: ContextEngineState): Promise<void> {
+    if (!state) return;
+    SnapshotStateHelper.restoreState(state, this.env.inbox);
+
+    // Explicitly run the initialization trigger to eagerly splice the restored snapshot
+    // into the graph *before* the first user message creates cache artifacts.
+    const nodes = this.buffer.nodes;
+    const hydratedNodes = await this.orchestrator.executeTriggerSync(
+      'initialization',
+      nodes,
+      new Set(), // No trigger targets needed, it just reads the inbox
+    );
+
+    // Create a pseudo-processor result to apply the hydration without duplicating logic
+    this.buffer = this.buffer.applyProcessorResult(
+      'StateSnapshotHydration',
+      nodes,
+      hydratedNodes,
+    );
   }
 }

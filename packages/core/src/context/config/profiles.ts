@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { createStateSnapshotHydrationProcessor } from '../processors/stateSnapshotHydrationProcessor.js';
 import type {
   AsyncPipelineDef,
   ContextManagementConfig,
@@ -88,6 +89,29 @@ export const generalistProfile: ContextProfile = {
   ): PipelineDef[] =>
     // Helper to merge default options with dynamically loaded processorOptions by ID
     [
+      {
+        name: 'Initialization Hydration',
+        triggers: ['initialization'],
+        processors: [
+          createStateSnapshotHydrationProcessor('StateSnapshotHydration', env, {
+            target: (() => {
+              const res = resolveProcessorOptions(config, 'StateSnapshotSync', {
+                target: 'max',
+                maxStateTokens: 4000,
+                maxSummaryTurns: 5,
+              }).target;
+              if (
+                res === 'incremental' ||
+                res === 'freeNTokens' ||
+                res === 'max'
+              ) {
+                return res;
+              }
+              return undefined;
+            })(),
+          }),
+        ],
+      },
       {
         name: 'Immediate Sanitization',
         triggers: ['new_message'],

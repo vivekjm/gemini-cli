@@ -52,6 +52,7 @@ export interface BaselineSnapshotInfo {
   text: string;
   abstractsIds: string[];
   id: string;
+  timestamp: number;
 }
 
 /**
@@ -72,10 +73,46 @@ export function findLatestSnapshotBaseline(
         ? [...lastSnapshotNode.abstractsIds]
         : [],
       id: lastSnapshotNode.id,
+      timestamp: lastSnapshotNode.timestamp,
     };
   }
+
   return undefined;
 }
+
+import type { LiveInbox } from '../pipeline/inbox.js';
+import type { ContextEngineState } from '../../services/chatRecordingTypes.js';
+
+export const SnapshotStateHelper = {
+  exportState(nodes: readonly ConcreteNode[]): ContextEngineState {
+    const baseline = findLatestSnapshotBaseline(nodes);
+    if (!baseline) return {};
+
+    return {
+      snapshot: {
+        text: baseline.text,
+        consumedIds: baseline.abstractsIds,
+        timestamp: baseline.timestamp,
+      },
+    };
+  },
+
+  restoreState(state: ContextEngineState, inbox: LiveInbox): void {
+    if (!state.snapshot) return;
+
+    if (
+      typeof state.snapshot.text === 'string' &&
+      Array.isArray(state.snapshot.consumedIds)
+    ) {
+      inbox.publish('PROPOSED_SNAPSHOT', {
+        newText: state.snapshot.text,
+        consumedIds: state.snapshot.consumedIds,
+        type: 'accumulate',
+        timestamp: state.snapshot.timestamp ?? Date.now(),
+      });
+    }
+  },
+};
 
 export class SnapshotGenerator {
   constructor(private readonly env: ContextEnvironment) {}

@@ -414,6 +414,14 @@ export class GeminiClient {
         chat,
         this.lastPromptId,
       );
+      if (
+        this.contextManager &&
+        resumedSessionData?.conversation.contextState
+      ) {
+        this.contextManager.restoreState(
+          resumedSessionData.conversation.contextState,
+        );
+      }
       return chat;
     } catch (error) {
       await reportError(
@@ -819,6 +827,9 @@ export class GeminiClient {
             promptBaseUnits: currentBaseUnits,
           });
         }
+        this.chat
+          ?.getChatRecordingService()
+          ?.saveContextState(this.contextManager.exportState());
       }
       this.updateTelemetryTokenCount();
       if (event.type === GeminiEventType.Error) {

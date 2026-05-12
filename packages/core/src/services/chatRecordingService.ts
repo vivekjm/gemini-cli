@@ -36,6 +36,7 @@ import {
   type RewindRecord,
   type MetadataUpdateRecord,
   type PartialMetadataRecord,
+  type ContextEngineState,
 } from './chatRecordingTypes.js';
 export * from './chatRecordingTypes.js';
 
@@ -643,6 +644,15 @@ export class ChatRecordingService {
         error,
       );
       throw error;
+    }
+  }
+
+  saveContextState(contextState: ContextEngineState): void {
+    if (!this.conversationFile) return;
+    try {
+      this.updateMetadata({ contextState } as Partial<ConversationRecord>);
+    } catch (e: unknown) {
+      debugLogger.error('Error saving context state to chat history.', e);
     }
   }
 
