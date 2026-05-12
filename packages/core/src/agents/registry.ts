@@ -328,10 +328,9 @@ export class AgentRegistry {
   }
 
   /**
-   * Registers an agent definition. If an agent with the same name already
-   * exists from a different definition, a warning is emitted to surface
-   * potential state collision. The new definition still overwrites the old
-   * one to preserve existing precedence order (user → project → extension).
+   * Registers an agent definition. If an agent with the same name exists,
+   * it will be overwritten, respecting the precedence established by the
+   * initialization order.
    */
   protected async registerAgent<TOutput extends z.ZodTypeAny>(
     definition: AgentDefinition<TOutput>,
