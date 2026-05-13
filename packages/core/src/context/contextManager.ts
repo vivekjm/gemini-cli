@@ -437,7 +437,7 @@ export class ContextManager {
     return SnapshotStateHelper.exportState(this.buffer.nodes);
   }
 
-  async restoreState(state: ContextEngineState): Promise<void> {
+  restoreState(state: ContextEngineState): void {
     if (!state) return;
     SnapshotStateHelper.restoreState(state, this.env.inbox);
   }

@@ -7,7 +7,6 @@
 import type { ContextProcessor, AsyncContextProcessor } from '../pipeline.js';
 
 export type PipelineTrigger =
-  | 'initialization'
   | 'new_message'
   | 'retained_exceeded'
   | 'gc_backstop'
