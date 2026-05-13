@@ -304,6 +304,7 @@ export class ContextManager {
     const hotStartPromise = (async () => {
       if (!this.hasPerformedHotStart) {
         this.hasPerformedHotStart = true;
+
         if (this.buffer.nodes.length > 0) {
           const nodesForHotStart = [...this.buffer.nodes, ...previewNodes];
           await this.performHotStartCalibration(nodesForHotStart, abortSignal);
@@ -439,21 +440,5 @@ export class ContextManager {
   async restoreState(state: ContextEngineState): Promise<void> {
     if (!state) return;
     SnapshotStateHelper.restoreState(state, this.env.inbox);
-
-    // Explicitly run the initialization trigger to eagerly splice the restored snapshot
-    // into the graph *before* the first user message creates cache artifacts.
-    const nodes = this.buffer.nodes;
-    const hydratedNodes = await this.orchestrator.executeTriggerSync(
-      'initialization',
-      nodes,
-      new Set(), // No trigger targets needed, it just reads the inbox
-    );
-
-    // Create a pseudo-processor result to apply the hydration without duplicating logic
-    this.buffer = this.buffer.applyProcessorResult(
-      'StateSnapshotHydration',
-      nodes,
-      hydratedNodes,
-    );
   }
 }

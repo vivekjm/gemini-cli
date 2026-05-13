@@ -123,7 +123,12 @@ export function getStableId(
   }
 
   if (!id) {
-    id = randomUUID();
+    if (turnSalt && partIdx === -1) {
+      // Fallback for Turn objects (msg) since they don't have parts or content to hash directly here
+      id = `turn_${turnSalt}`;
+    } else {
+      id = randomUUID();
+    }
   }
 
   nodeIdentityMap.set(obj, id);
@@ -189,7 +194,7 @@ export class ContextGraphBuilder {
             apiId || getStableId(part, this.nodeIdentityMap, turnSalt, partIdx);
           const node: ConcreteNode = {
             id,
-            timestamp: Date.now(),
+            timestamp: 0, // Using 0 for deterministic structural equality. Actual time is applied by orchestrator.
             type: isFunctionResponsePart(part)
               ? NodeType.TOOL_EXECUTION
               : NodeType.USER_PROMPT,
@@ -210,7 +215,7 @@ export class ContextGraphBuilder {
             apiId || getStableId(part, this.nodeIdentityMap, turnSalt, partIdx);
           const node: ConcreteNode = {
             id,
-            timestamp: Date.now(),
+            timestamp: 0, // Using 0 for deterministic structural equality. Actual time is applied by orchestrator.
             type: isFunctionCallPart(part)
               ? NodeType.TOOL_EXECUTION
               : NodeType.AGENT_THOUGHT,
